@@ -13,8 +13,7 @@ interface DynamicCalculatorProps {
 }
 
 export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator, onSelectCalculator }) => {
-  const { language, t } = useLanguage();
-  const displayLang = language === 'zh_hans' ? 'zh' : language;
+  const { language, t, tl } = useLanguage();
   const { theme } = useTheme();
 
   // Dynamic state dictionary for form inputs
@@ -69,7 +68,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
         valStr = val ? (lang === 'zh' ? '是 (Yes)' : 'Yes') : (lang === 'zh' ? '否 (No)' : 'No');
       } else if (input.type === 'select') {
         const opt = input.options?.find((o) => o.value === val);
-        valStr = opt ? opt.label[lang] : val;
+        valStr = opt ? tl(opt.label) : val;
       } else {
         valStr = val !== undefined && val !== null && val !== '' ? `${val} ${input.unit || ''}` : '--';
       }
@@ -90,7 +89,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
     const recommendationStr = result.recommendation ? result.recommendation[lang] : '';
     const descriptionStr = result.description ? result.description[lang] : '';
 
-    const note = `[Clinical Note] ${calculator.name[lang]}: ${resultStr}\n` +
+    const note = `[Clinical Note] ${tl(calculator.name)}: ${resultStr}\n` +
                  (riskStr ? `Risk Level / Interpretation: ${riskStr}\n` : '') +
                  `Inputs:\n${inputLines}\n` +
                  (descriptionStr ? `Detail: ${descriptionStr}\n` : '') +
@@ -119,11 +118,11 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
         const opt = input.options?.find((o) => o.value === val);
         if (!opt) return null;
         // Clean points annotations like (+1pt) to keep clinical note clean
-        valStr = opt.label[lang].replace(/\(\+?-?\d+分\)/g, '').replace(/\(\+?-?\d+ pts?\)/g, '').trim();
+        valStr = tl(opt.label).replace(/\(\+?-?\d+分\)/g, '').replace(/\(\+?-?\d+ pts?\)/g, '').trim();
       } else {
         valStr = `${val} ${input.unit || ''}`.trim();
       }
-      return `${input.name[lang]}: ${valStr}`;
+      return `${tl(input.name)}: ${valStr}`;
     }).filter(Boolean).join(', ');
 
     let resultStr = '';
@@ -192,10 +191,10 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
         <div className="flex items-center justify-between border-b border-border-card/40 pb-4">
           <div>
             <h2 className="text-xl font-bold font-serif tracking-wide text-text-title">
-              {calculator.name[displayLang]}
+              {tl(calculator.name)}
             </h2>
             <p className="text-xs text-text-muted mt-1">
-              {calculator.subtitle[displayLang]}
+              {tl(calculator.subtitle)}
             </p>
           </div>
           <button
@@ -214,7 +213,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
             <div key={input.id} className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-text-title dark:text-slate-350 font-display block">
-                  {input.name[displayLang]}
+                  {tl(input.name)}
                 </label>
                 {input.unit && <span className="text-xs text-text-muted font-sans">{input.unit}</span>}
               </div>
@@ -266,7 +265,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                             : 'bg-white/50 dark:bg-slate-950/40 border-border-card dark:border-border-card/50 text-text-body dark:text-slate-400 hover:bg-accent-pink/25 dark:hover:bg-slate-900/40 hover:text-text-title dark:hover:text-slate-200 hover:border-accent-pink-solid/50 dark:hover:border-slate-700'
                         }`}
                       >
-                        {opt.label[displayLang]}
+                        {tl(opt.label)}
                       </button>
                     );
                   })}
@@ -275,7 +274,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
 
               {input.tooltip && (
                 <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
-                  * {input.tooltip[displayLang]}
+                  * {tl(input.tooltip)}
                 </p>
               )}
             </div>
@@ -301,11 +300,11 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                   >
                     <div className="flex-1 pr-3">
                       <div className="text-xs font-semibold text-text-title dark:text-slate-250 font-display leading-snug">
-                        {input.name[displayLang]}
+                        {tl(input.name)}
                       </div>
                       {input.tooltip && (
                         <p className="text-[9px] text-text-muted mt-1 font-sans leading-normal">
-                          {input.tooltip[displayLang]}
+                          {tl(input.tooltip)}
                         </p>
                       )}
                     </div>
@@ -375,7 +374,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
               }`}
             >
               {(result.riskColor?.includes('rose') || result.riskColor?.includes('red')) && <AlertTriangle size={12} className="animate-pulse" />}
-              {result.riskLevel[displayLang]}
+              {tl(result.riskLevel)}
             </div>
           )}
 
@@ -384,24 +383,24 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
             <div className="border-t border-border-card/40 my-3"></div>
 
             <div className="text-left space-y-3.5">
-              {result.description[displayLang] && (
+              {tl(result.description) && (
                 <div>
                   <span className="text-[10px] font-bold text-text-muted uppercase block font-display tracking-widest mb-1.5">
                     {t('common.risk')}
                   </span>
                   <p className="text-xs text-text-body dark:text-slate-300 leading-relaxed">
-                    {result.description[displayLang]}
+                    {tl(result.description)}
                   </p>
                 </div>
               )}
 
-              {result.recommendation?.[displayLang] && (
+              {tl(result.recommendation) && (
                 <div className="bg-bg-secondary/40 dark:bg-slate-950/45 border border-border-card dark:border-slate-850 p-3.5 rounded-2xl">
                   <span className="text-[10px] font-bold text-accent-pink-solid dark:text-accent-blue-solid uppercase block font-display tracking-widest mb-1.5">
                     {t('common.interpretation')}
                   </span>
                   <p className="text-xs text-text-title dark:text-slate-200 font-semibold leading-relaxed">
-                    {result.recommendation[displayLang]}
+                    {tl(result.recommendation)}
                   </p>
                 </div>
               )}
@@ -488,13 +487,13 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
         <Accordion title={t('common.clinical_pearls')}>
           <div className="space-y-4">
             {/* Pearls list */}
-            {calculator.pearls[displayLang] && calculator.pearls[displayLang].length > 0 && (
+            {tl(calculator.pearls) && calculator.pearls.length > 0 && (
               <div className="bg-bg-secondary/45 dark:bg-slate-950/30 p-4 rounded-xl border border-border-card/60 dark:border-slate-800/40 space-y-2.5">
                 <span className="text-[10px] font-bold text-accent-pink-solid dark:text-accent-blue-solid uppercase tracking-widest block font-display">
                   {language === 'zh' ? '臨床指引與核心觀點' : 'Clinical Directives & Insights'}
                 </span>
                 <ul className="list-disc pl-4 space-y-1.5 text-xs text-text-body dark:text-slate-350 font-sans">
-                  {calculator.pearls[displayLang].map((pearl, idx) => (
+                  {calculator.pearls.map((pearl, idx) => (
                     <li key={idx} className="leading-relaxed">{pearl}</li>
                   ))}
                 </ul>

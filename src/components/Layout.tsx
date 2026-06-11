@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import LanguageSelector from './LanguageSelector';
 import {
   Activity,
   Heart,
@@ -120,17 +121,8 @@ export const Layout: React.FC<LayoutProps> = ({
     });
   }, [searchQuery, selectedCategory]);
 
-  const toggleLanguage = () => {
-    if (language === 'zh') {
-      setLanguage('zh_hans');
-    } else if (language === 'zh_hans') {
-      setLanguage('en');
-    } else {
-      setLanguage('zh');
-    }
-  }
-    setLanguage(language === 'zh' ? 'en' : 'zh');
-  };
+// duplicate toggleLanguage removed
+    
 
   const sidebarContent = (
     <div className="flex flex-col h-full space-y-4 font-sans">
