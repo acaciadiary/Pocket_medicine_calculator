@@ -1,37 +1,123 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
 @import "tailwindcss";
+
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
+
+  /* Warm Journal Theme variables (Light Mode) */
+  --bg-primary: #faf8f5;
+  --bg-secondary: #f4eae1;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --border-card: rgba(232, 223, 216, 0.85);
+  --shadow-card: 0 10px 30px -5px rgba(180, 160, 145, 0.12);
+  --text-title: #3c3633;
+  --text-body: #5a524e;
+  --text-muted: #8c827c;
+  
+  --accent-pink: rgba(229, 169, 180, 0.25);
+  --accent-pink-solid: #e5a9b4;
+  --accent-pink-hover: rgba(229, 169, 180, 0.4);
+  --accent-blue: rgba(214, 228, 235, 0.5);
+  --accent-blue-solid: #bcd0db;
+  --accent-blue-hover: rgba(214, 228, 235, 0.8);
+  --accent-beige: #eedfd2;
+  --accent-beige-hover: #e5d1c1;
+
+  --accent-green: #e2f0d9;
+  --accent-yellow: #fff3cd;
+  --accent-red: #f8d7da;
+
+  --grid-color: rgba(180, 160, 145, 0.07);
+}
+
+.dark {
+  /* Premium Slate Theme variables (Dark Mode) */
+  --bg-primary: #070b14;
+  --bg-secondary: #0e1423;
+  --bg-card: rgba(15, 22, 38, 0.65);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  --text-title: #f3f4f6;
+  --text-body: #d1d5db;
+  --text-muted: #9ca3af;
+  
+  --accent-pink: rgba(244, 63, 94, 0.12);
+  --accent-pink-solid: #f43f5e;
+  --accent-pink-hover: rgba(244, 63, 94, 0.25);
+  --accent-blue: rgba(6, 182, 212, 0.15);
+  --accent-blue-solid: #06b6d4;
+  --accent-blue-hover: rgba(6, 182, 212, 0.3);
+  --accent-beige: rgba(245, 158, 11, 0.1);
+  --accent-beige-hover: rgba(245, 158, 11, 0.2);
+
+  --accent-green: rgba(16, 185, 129, 0.15);
+  --accent-yellow: rgba(245, 158, 11, 0.15);
+  --accent-red: rgba(239, 68, 68, 0.15);
+
+  --grid-color: rgba(255, 255, 255, 0.025);
+}
 
 @theme {
   --font-sans: 'Inter', sans-serif;
   --font-display: 'Outfit', sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
   
-  --color-medical-bg: #070a13;
-  --color-glass-card: rgba(13, 18, 30, 0.45);
-  --color-glass-border: rgba(255, 255, 255, 0.06);
-  --color-glass-glow: rgba(6, 182, 212, 0.15);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-card: var(--bg-card);
+  --color-border-card: var(--border-card);
+  --color-text-title: var(--text-title);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+  
+  --color-accent-pink: var(--accent-pink);
+  --color-accent-pink-solid: var(--accent-pink-solid);
+  --color-accent-pink-hover: var(--accent-pink-hover);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-solid: var(--accent-blue-solid);
+  --color-accent-blue-hover: var(--accent-blue-hover);
+  --color-accent-beige: var(--accent-beige);
+  --color-accent-beige-hover: var(--accent-beige-hover);
+  
+  --color-accent-green: var(--accent-green);
+  --color-accent-yellow: var(--accent-yellow);
+  --color-accent-red: var(--accent-red);
 }
 
-/* Custom background styles for high end premium feel */
+/* Custom background styles with dynamic theme colors */
 body {
-  background-color: #070b14;
+  background-color: var(--bg-primary);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, var(--accent-pink) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, var(--accent-blue) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, var(--accent-beige) 0px, transparent 50%);
   background-attachment: fixed;
-  color: #f3f4f6;
+  color: var(--text-body);
   font-family: var(--font-sans);
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom glassmorphism classes */
+/* Custom notebook coordinate grid texture overlay */
+.grid-notebook-pattern {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+}
+
+/* Custom glassmorphism / card panels */
 .glass-panel {
-  background: rgba(13, 18, 30, 0.55);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-panel-hover {
@@ -39,9 +125,14 @@ body {
 }
 
 .glass-panel-hover:hover {
-  background: rgba(18, 26, 42, 0.65);
-  border-color: rgba(6, 182, 212, 0.25);
-  box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
+  background: var(--bg-card);
+  border-color: var(--accent-pink-solid);
+  box-shadow: 0 12px 30px rgba(180, 160, 145, 0.2);
+}
+
+.dark .glass-panel-hover:hover {
+  border-color: var(--accent-blue-solid);
+  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.15);
 }
 
 /* Custom scrollbar */
@@ -50,17 +141,21 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(7, 10, 19, 0.5);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-card);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.4);
+  background: var(--text-muted);
 }
 
-/* Custom font styling helper classes */
+/* Utility font styling helper classes */
 .font-display {
   font-family: var(--font-display);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
 }

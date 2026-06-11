@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LanguageProvider } from './context/LanguageContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { Layout } from './components/Layout'
 import { DynamicCalculator } from './components/DynamicCalculator'
 import { calculatorsList, type Calculator } from './calculators/definitions'
@@ -22,27 +23,29 @@ function App() {
   })
 
   return (
-    <LanguageProvider>
-      <Layout selectedCalculator={selectedCalculator} onSelectCalculator={setSelectedCalculator}>
-        <div className="relative w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedCalculator.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-              className="w-full"
-            >
-              <DynamicCalculator 
-                calculator={selectedCalculator} 
-                onSelectCalculator={setSelectedCalculator} 
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </Layout>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <Layout selectedCalculator={selectedCalculator} onSelectCalculator={setSelectedCalculator}>
+          <div className="relative w-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedCalculator.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                className="w-full"
+              >
+                <DynamicCalculator 
+                  calculator={selectedCalculator} 
+                  onSelectCalculator={setSelectedCalculator} 
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </Layout>
+      </LanguageProvider>
+    </ThemeProvider>
   )
 }
 

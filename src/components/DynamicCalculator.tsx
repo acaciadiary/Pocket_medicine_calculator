@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { Accordion } from './Accordion';
 import { calculatorsList, type Calculator } from '../calculators/definitions';
 import { Copy, Check, RotateCcw, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -13,6 +14,7 @@ interface DynamicCalculatorProps {
 
 export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator, onSelectCalculator }) => {
   const { language, t } = useLanguage();
+  const { theme } = useTheme();
 
   // Dynamic state dictionary for form inputs
   const [values, setValues] = useState<Record<string, any>>(() => {
@@ -145,11 +147,28 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
   };
 
   const getGlowBgColor = (riskColorStr: string | undefined) => {
-    if (!riskColorStr) return 'bg-cyan-500';
-    if (riskColorStr.includes('emerald')) return 'bg-emerald-500';
-    if (riskColorStr.includes('amber')) return 'bg-amber-500';
-    if (riskColorStr.includes('rose')) return 'bg-rose-500';
-    return 'bg-cyan-500';
+    if (!riskColorStr) return 'bg-accent-blue-solid';
+    if (riskColorStr.includes('emerald') || riskColorStr.includes('green')) return 'bg-emerald-500';
+    if (riskColorStr.includes('amber') || riskColorStr.includes('yellow')) return 'bg-amber-500';
+    if (riskColorStr.includes('rose') || riskColorStr.includes('red')) return 'bg-rose-500';
+    return 'bg-accent-blue-solid';
+  };
+
+  const getThemeAdjustedRiskColor = (riskColorStr: string | undefined) => {
+    if (!riskColorStr) return 'text-accent-blue-solid bg-accent-blue/30 border-accent-blue-solid/40 dark:text-cyan-400 dark:bg-cyan-950/40 dark:border-cyan-800/40';
+    if (theme === 'dark') return riskColorStr;
+
+    // For light mode, map standard dark classes to beautiful Morandi/pastel colors
+    if (riskColorStr.includes('rose') || riskColorStr.includes('red')) {
+      return 'text-red-750 bg-red-50/90 border border-red-200 shadow-sm';
+    }
+    if (riskColorStr.includes('amber') || riskColorStr.includes('yellow')) {
+      return 'text-amber-800 bg-amber-50/90 border border-amber-200 shadow-sm';
+    }
+    if (riskColorStr.includes('emerald') || riskColorStr.includes('green')) {
+      return 'text-emerald-800 bg-emerald-50/90 border border-emerald-250/70 shadow-sm';
+    }
+    return 'text-text-body bg-bg-secondary border border-border-card shadow-sm';
   };
 
   // Determine what score or value to display in the dial
@@ -166,21 +185,21 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
   const normalInputs = calculator.inputs.filter((i) => i.type !== 'boolean');
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full font-sans">
       {/* Inputs Section */}
-      <div className="lg:col-span-7 glass-panel p-6 md:p-8 rounded-3xl border border-glass-border shadow-xl space-y-6">
-        <div className="flex items-center justify-between border-b border-glass-border/40 pb-4">
+      <div className="lg:col-span-7 glass-panel p-6 md:p-8 rounded-3xl border border-border-card shadow-xl space-y-6">
+        <div className="flex items-center justify-between border-b border-border-card/40 pb-4">
           <div>
-            <h2 className="text-xl font-bold font-display tracking-wide text-white">
+            <h2 className="text-xl font-bold font-serif tracking-wide text-text-title">
               {calculator.name[language]}
             </h2>
-            <p className="text-xs text-slate-400 mt-1 font-sans">
+            <p className="text-xs text-text-muted mt-1">
               {calculator.subtitle[language]}
             </p>
           </div>
           <button
             onClick={resetAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 transition-all cursor-pointer select-none"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/70 dark:bg-slate-800/60 hover:bg-accent-pink/30 dark:hover:bg-slate-700/80 border border-border-card dark:border-slate-700/40 text-text-body dark:text-slate-300 transition-all cursor-pointer select-none"
           >
             <RotateCcw size={12} />
             {t('common.reset')}
@@ -188,15 +207,15 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
         </div>
 
         {/* Inputs List */}
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Render select & number inputs */}
           {normalInputs.map((input) => (
             <div key={input.id} className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300 font-display block">
+                <label className="text-xs font-semibold text-text-title dark:text-slate-350 font-display block">
                   {input.name[language]}
                 </label>
-                {input.unit && <span className="text-xs text-slate-500 font-sans">{input.unit}</span>}
+                {input.unit && <span className="text-xs text-text-muted font-sans">{input.unit}</span>}
               </div>
 
               {input.type === 'number' && (
@@ -211,11 +230,11 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                       const val = e.target.value;
                       handleChange(input.id, val === '' ? '' : parseFloat(val));
                     }}
-                    className="w-full bg-slate-950/60 border border-glass-border/80 focus:border-cyan-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all font-sans"
+                    className="w-full bg-white/70 dark:bg-slate-950/60 border border-border-card dark:border-slate-800 focus:border-accent-pink-solid dark:focus:border-accent-blue-solid rounded-xl px-4 py-2.5 text-sm text-text-title dark:text-white placeholder-text-muted focus:outline-none transition-all font-sans"
                   />
                   {input.min !== undefined && input.max !== undefined && (
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-slate-500 font-sans">{input.min}</span>
+                      <span className="text-[10px] text-text-muted font-sans">{input.min}</span>
                       <input
                         type="range"
                         min={input.min}
@@ -223,9 +242,9 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                         step={input.step ?? 1}
                         value={values[input.id] ?? input.min}
                         onChange={(e) => handleChange(input.id, parseFloat(e.target.value))}
-                        className="flex-1 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                        className="flex-1 h-1 bg-bg-secondary dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-accent-pink-solid dark:accent-accent-blue-solid"
                       />
-                      <span className="text-[10px] text-slate-500 font-sans">{input.max}</span>
+                      <span className="text-[10px] text-text-muted font-sans">{input.max}</span>
                     </div>
                   )}
                 </div>
@@ -233,25 +252,28 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
 
               {input.type === 'select' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {input.options?.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => handleChange(input.id, opt.value)}
-                      className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer text-xs relative ${
-                        values[input.id] === opt.value
-                          ? 'bg-cyan-500/10 border-cyan-500/50 text-white font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
-                          : 'bg-slate-950/40 border-glass-border text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      }`}
-                    >
-                      {opt.label[language]}
-                    </button>
-                  ))}
+                  {input.options?.map((opt) => {
+                    const isSelected = values[input.id] === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => handleChange(input.id, opt.value)}
+                        className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer text-xs relative ${
+                          isSelected
+                            ? 'bg-accent-blue/60 dark:bg-accent-blue/30 border-accent-blue-solid/65 dark:border-accent-blue-solid text-text-title dark:text-white font-semibold shadow-sm'
+                            : 'bg-white/50 dark:bg-slate-950/40 border-border-card dark:border-border-card/50 text-text-body dark:text-slate-400 hover:bg-accent-pink/25 dark:hover:bg-slate-900/40 hover:text-text-title dark:hover:text-slate-200 hover:border-accent-pink-solid/50 dark:hover:border-slate-700'
+                        }`}
+                      >
+                        {opt.label[language]}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
               {input.tooltip && (
-                <p className="text-[10px] text-slate-500 mt-1 font-sans leading-relaxed">
+                <p className="text-[10px] text-text-muted mt-1 leading-relaxed">
                   * {input.tooltip[language]}
                 </p>
               )}
@@ -261,7 +283,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
           {/* Render checklist boolean parameters as elegant grids */}
           {booleanInputs.length > 0 && (
             <div className="space-y-3 pt-2">
-              <h3 className="text-xs uppercase tracking-widest text-slate-400 font-bold font-display">
+              <h3 className="text-xs uppercase tracking-widest text-text-muted font-bold font-display">
                 {language === 'zh' ? '評估項目與臨床指標' : 'Criteria & Risk Indicators'}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -270,25 +292,25 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                     key={input.id}
                     type="button"
                     onClick={() => handleChange(input.id, !values[input.id])}
-                    className={`flex items-start justify-between p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
+                    className={`flex items-start justify-between p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer ${
                       values[input.id]
-                        ? 'bg-cyan-500/10 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.04)]'
-                        : 'bg-slate-950/30 border-glass-border hover:border-slate-750/70'
+                        ? 'bg-accent-pink/40 dark:bg-accent-pink border-accent-pink-solid dark:border-accent-pink-solid/60 text-text-title dark:text-white font-semibold shadow-sm'
+                        : 'bg-white/50 dark:bg-slate-950/30 border-border-card dark:border-border-card hover:bg-accent-pink/20 dark:hover:bg-slate-900/20 hover:border-accent-pink-solid/40 dark:hover:border-slate-800'
                     }`}
                   >
                     <div className="flex-1 pr-3">
-                      <div className="text-xs font-semibold text-slate-200 font-display leading-snug">
+                      <div className="text-xs font-semibold text-text-title dark:text-slate-250 font-display leading-snug">
                         {input.name[language]}
                       </div>
                       {input.tooltip && (
-                        <p className="text-[9px] text-slate-500 mt-1 font-sans leading-normal">
+                        <p className="text-[9px] text-text-muted mt-1 font-sans leading-normal">
                           {input.tooltip[language]}
                         </p>
                       )}
                     </div>
                     <div
                       className={`w-7 h-4 rounded-full p-0.5 mt-0.5 transition-colors duration-200 shrink-0 ${
-                        values[input.id] ? 'bg-cyan-500' : 'bg-slate-800'
+                        values[input.id] ? 'bg-accent-pink-solid dark:bg-accent-blue-solid' : 'bg-bg-secondary dark:bg-slate-800'
                       }`}
                     >
                       <div
@@ -307,38 +329,37 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
 
       {/* Output / Result Section */}
       <div className="lg:col-span-5 space-y-6">
-        <div className="glass-panel p-6 md:p-8 rounded-3xl border border-glass-border shadow-xl flex flex-col items-center justify-center text-center relative overflow-hidden">
-          {/* Top subtle glow bar */}
-          <div className="absolute top-0 w-1/2 h-1 bg-cyan-400/30 blur-md rounded-full"></div>
-
-          <h3 className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-5 font-display">
+        <div className="glass-panel p-6 md:p-8 rounded-3xl border border-border-card shadow-xl flex flex-col items-center justify-center text-center relative overflow-hidden">
+          
+          <h3 className="text-xs uppercase tracking-widest text-text-muted font-bold mb-4 font-display">
             {t('common.result')}
           </h3>
 
-          {/* elegant radial dial */}
-          <div className="relative w-40 h-40 flex items-center justify-center mb-6">
-            <div className="absolute inset-0 rounded-full border border-slate-900/60"></div>
-            <div className="absolute inset-2 rounded-full border border-glass-border"></div>
+          {/* Elegant Radial Dial / Central score bubble */}
+          <div className="relative w-36 h-36 flex items-center justify-center mb-5 mt-1">
+            {/* Outer soft double borders */}
+            <div className="absolute inset-0 rounded-full border border-border-card/60 dark:border-slate-800/80"></div>
+            <div className="absolute inset-2 rounded-full border border-border-card dark:border-slate-800/65"></div>
 
-            {/* Glowing neon halo based on result color */}
+            {/* Central color background based on result risk level with blur/glow */}
             <div
-              className={`absolute inset-4 rounded-full filter blur-md opacity-20 transition-all duration-500 ${getGlowBgColor(
+              className={`absolute inset-3 rounded-full filter blur-[6px] opacity-10 dark:opacity-20 transition-all duration-500 ${getGlowBgColor(
                 result.riskColor
               )}`}
             ></div>
 
             {/* Central Values Display */}
-            <div className="z-10 flex flex-col items-center px-2">
+            <div className="z-10 flex flex-col items-center px-3">
               <motion.span
                 key={showText}
                 initial={{ scale: 0.7, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="text-4xl font-extrabold font-display leading-none text-white tracking-tight break-all max-w-full"
+                className="text-4xl font-bold font-serif leading-none text-text-title dark:text-white tracking-tight break-all max-w-full"
               >
                 {showText}
               </motion.span>
               {showUnit && (
-                <span className="text-[10px] font-semibold text-slate-400 uppercase mt-1.5 tracking-wider font-display">
+                <span className="text-[9px] font-bold text-text-muted dark:text-slate-400 uppercase mt-1 tracking-wider font-display">
                   {showUnit}
                 </span>
               )}
@@ -349,36 +370,36 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
           {result.riskLevel && (
             <div
               className={`px-4 py-1.5 rounded-full border text-xs font-bold tracking-wide flex items-center gap-1.5 mb-5 transition-all duration-300 ${
-                result.riskColor || 'text-cyan-400 bg-cyan-950/40 border-cyan-800/40'
+                getThemeAdjustedRiskColor(result.riskColor)
               }`}
             >
-              {result.riskColor?.includes('rose') && <AlertTriangle size={13} className="animate-bounce" />}
+              {(result.riskColor?.includes('rose') || result.riskColor?.includes('red')) && <AlertTriangle size={12} className="animate-pulse" />}
               {result.riskLevel[language]}
             </div>
           )}
 
           {/* Explanatory Details */}
           <div className="space-y-4 w-full">
-            <div className="border-t border-glass-border/30 my-3"></div>
+            <div className="border-t border-border-card/40 my-3"></div>
 
             <div className="text-left space-y-3.5">
               {result.description[language] && (
                 <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block font-display tracking-widest mb-1.5">
+                  <span className="text-[10px] font-bold text-text-muted uppercase block font-display tracking-widest mb-1.5">
                     {t('common.risk')}
                   </span>
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs text-text-body dark:text-slate-300 leading-relaxed">
                     {result.description[language]}
                   </p>
                 </div>
               )}
 
               {result.recommendation?.[language] && (
-                <div className="bg-slate-950/45 border border-glass-border p-3.5 rounded-2xl">
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase block font-display tracking-widest mb-1.5">
+                <div className="bg-bg-secondary/40 dark:bg-slate-950/45 border border-border-card dark:border-slate-850 p-3.5 rounded-2xl">
+                  <span className="text-[10px] font-bold text-accent-pink-solid dark:text-accent-blue-solid uppercase block font-display tracking-widest mb-1.5">
                     {t('common.interpretation')}
                   </span>
-                  <p className="text-xs text-slate-200 font-semibold leading-relaxed">
+                  <p className="text-xs text-text-title dark:text-slate-200 font-semibold leading-relaxed">
                     {result.recommendation[language]}
                   </p>
                 </div>
@@ -391,15 +412,15 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                     const feureaCalc = calculatorsList.find((c) => c.id === 'feurea');
                     if (feureaCalc) onSelectCalculator(feureaCalc);
                   }}
-                  className="mt-3 bg-cyan-950/30 hover:bg-cyan-950/50 border border-cyan-500/20 hover:border-cyan-500/40 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-300 group shadow-md"
+                  className="mt-3 bg-accent-blue/20 hover:bg-accent-blue/35 dark:bg-cyan-950/30 dark:hover:bg-cyan-950/50 border border-accent-blue-solid/30 dark:border-cyan-500/20 hover:border-accent-blue-solid/50 dark:hover:border-cyan-500/40 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-300 group shadow-sm animate-fade-in"
                 >
                   <div className="flex items-center gap-2.5">
-                    <AlertTriangle size={14} className="text-cyan-400 shrink-0 group-hover:scale-110 transition-transform animate-pulse" />
-                    <span className="text-xs text-cyan-300 font-medium text-left leading-normal">
+                    <AlertTriangle size={14} className="text-accent-blue-solid dark:text-cyan-400 shrink-0 group-hover:scale-110 transition-transform animate-pulse" />
+                    <span className="text-xs text-text-title dark:text-cyan-300 font-medium text-left leading-normal">
                       {t('common.smart_link.diuretic')}
                     </span>
                   </div>
-                  <ExternalLink size={12} className="text-cyan-400/70 group-hover:text-cyan-300 transition-colors shrink-0 ml-1.5" />
+                  <ExternalLink size={12} className="text-text-muted dark:text-cyan-400/70 group-hover:text-text-title dark:group-hover:text-cyan-300 transition-colors shrink-0 ml-1.5" />
                 </div>
               )}
 
@@ -410,32 +431,32 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                     const wintersCalc = calculatorsList.find((c) => c.id === 'winters-formula');
                     if (wintersCalc) onSelectCalculator(wintersCalc);
                   }}
-                  className="mt-3 bg-cyan-950/30 hover:bg-cyan-950/50 border border-cyan-500/20 hover:border-cyan-500/40 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-300 group shadow-md"
+                  className="mt-3 bg-accent-blue/20 hover:bg-accent-blue/35 dark:bg-cyan-950/30 dark:hover:bg-cyan-950/50 border border-accent-blue-solid/30 dark:border-cyan-500/20 hover:border-accent-blue-solid/50 dark:hover:border-cyan-500/40 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-300 group shadow-sm"
                 >
                   <div className="flex items-center gap-2.5">
-                    <AlertTriangle size={14} className="text-cyan-400 shrink-0 group-hover:scale-110 transition-transform animate-pulse" />
-                    <span className="text-xs text-cyan-300 font-medium text-left leading-normal">
+                    <AlertTriangle size={14} className="text-accent-blue-solid dark:text-cyan-400 shrink-0 group-hover:scale-110 transition-transform animate-pulse" />
+                    <span className="text-xs text-text-title dark:text-cyan-300 font-medium text-left leading-normal">
                       {t('common.smart_link.hagma')}
                     </span>
                   </div>
-                  <ExternalLink size={12} className="text-cyan-400/70 group-hover:text-cyan-300 transition-colors shrink-0 ml-1.5" />
+                  <ExternalLink size={12} className="text-text-muted dark:text-cyan-400/70 group-hover:text-text-title dark:group-hover:text-cyan-300 transition-colors shrink-0 ml-1.5" />
                 </div>
               )}
             </div>
 
-            <div className="border-t border-glass-border/30 my-3"></div>
+            <div className="border-t border-border-card/40 my-3"></div>
 
             {/* Actions: Copy Note & EHR Copy */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
               <button
                 onClick={copyClinicalNote}
                 disabled={result.error !== undefined}
-                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-md select-none ${
+                className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm select-none ${
                   result.error
-                    ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                    ? 'bg-bg-secondary/60 text-text-muted border border-border-card/50 cursor-not-allowed'
                     : copied
-                    ? 'bg-emerald-600 text-white shadow-emerald-700/20'
-                    : 'bg-slate-800/80 hover:bg-slate-700/80 border border-slate-750 text-slate-300 hover:text-white shadow-slate-900/10'
+                    ? 'bg-emerald-600 dark:bg-emerald-700 text-white shadow-emerald-700/20 animate-pulse'
+                    : 'bg-white/95 dark:bg-slate-800/80 hover:bg-accent-pink/30 dark:hover:bg-slate-700/80 border border-border-card dark:border-slate-750 text-text-body dark:text-slate-300 hover:text-text-title dark:hover:text-white shadow-sm'
                 }`}
               >
                 {copied ? <Check size={13} className="shrink-0" /> : <Copy size={13} className="shrink-0" />}
@@ -445,12 +466,12 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
               <button
                 onClick={copyEhrTemplate}
                 disabled={result.error !== undefined}
-                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-md select-none ${
+                className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm select-none ${
                   result.error
-                    ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                    ? 'bg-bg-secondary/60 text-text-muted border border-border-card/50 cursor-not-allowed'
                     : ehrCopied
-                    ? 'bg-emerald-600 text-white shadow-emerald-700/20'
-                    : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/10 hover:shadow-cyan-600/20'
+                    ? 'bg-emerald-600 dark:bg-emerald-700 text-white shadow-emerald-700/20'
+                    : 'bg-accent-pink-solid dark:bg-cyan-600 hover:bg-accent-pink-solid/95 dark:hover:bg-cyan-505 text-white shadow-md hover:shadow-lg shadow-pink-200/40 dark:shadow-cyan-600/10'
                 }`}
               >
                 {ehrCopied ? <Check size={13} className="shrink-0" /> : <Copy size={13} className="shrink-0" />}
@@ -467,11 +488,11 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
           <div className="space-y-4">
             {/* Pearls list */}
             {calculator.pearls[language] && calculator.pearls[language].length > 0 && (
-              <div className="bg-slate-950/30 p-4 rounded-xl border border-glass-border/40 space-y-2.5">
-                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest block font-display">
+              <div className="bg-bg-secondary/45 dark:bg-slate-950/30 p-4 rounded-xl border border-border-card/60 dark:border-slate-800/40 space-y-2.5">
+                <span className="text-[10px] font-bold text-accent-pink-solid dark:text-accent-blue-solid uppercase tracking-widest block font-display">
                   {language === 'zh' ? '臨床指引與核心觀點' : 'Clinical Directives & Insights'}
                 </span>
-                <ul className="list-disc pl-4 space-y-1.5 text-xs text-slate-300 font-sans">
+                <ul className="list-disc pl-4 space-y-1.5 text-xs text-text-body dark:text-slate-350 font-sans">
                   {calculator.pearls[language].map((pearl, idx) => (
                     <li key={idx} className="leading-relaxed">{pearl}</li>
                   ))}
@@ -480,12 +501,12 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
             )}
 
             {/* Formula Logic and MDCalc Reference */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3 border-t border-glass-border/20 text-xs">
-              <div className="space-y-1 text-slate-400">
-                <span className="font-semibold font-display text-[10px] uppercase text-slate-500 tracking-wider block">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3 border-t border-border-card/20 text-xs">
+              <div className="space-y-1 text-text-muted">
+                <span className="font-semibold font-display text-[10px] uppercase tracking-wider block">
                   {t('common.reference')}
                 </span>
-                <code className="text-[11px] bg-slate-950/40 px-2 py-1 rounded border border-glass-border font-mono text-cyan-300 break-all inline-block">
+                <code className="text-[11px] bg-bg-secondary/70 dark:bg-slate-950/40 px-2 py-1 rounded border border-border-card dark:border-slate-800 font-mono text-accent-pink-solid dark:text-accent-blue-solid break-all inline-block">
                   {calculator.reference}
                 </code>
               </div>
@@ -495,7 +516,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                   href={calculator.mdcalcLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-semibold font-display transition-colors hover:underline shrink-0 text-xs"
+                  className="flex items-center gap-1.5 text-accent-pink-solid dark:text-accent-blue-solid hover:underline font-semibold font-display transition-colors hover:underline shrink-0 text-xs"
                 >
                   {language === 'zh' ? '在 MDCalc 上查看' : 'Verify on MDCalc'}
                   <ExternalLink size={12} />
