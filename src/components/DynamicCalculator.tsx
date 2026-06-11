@@ -16,6 +16,8 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
   const { language, t, tl } = useLanguage();
   const { theme } = useTheme();
 
+  const pearls = (language === 'zh' || language === 'zh_hans') ? calculator.pearls.zh : calculator.pearls.en;
+
   // Dynamic state dictionary for form inputs
   const [values, setValues] = useState<Record<string, any>>(() => {
     const initialValues: Record<string, any> = {};
@@ -72,7 +74,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
       } else {
         valStr = val !== undefined && val !== null && val !== '' ? `${val} ${input.unit || ''}` : '--';
       }
-      return ` - ${input.name[lang]}: ${valStr}`;
+      return ` - ${tl(input.name)}: ${valStr}`;
     }).join('\n');
 
     // Format final computed value text
@@ -85,9 +87,9 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
       resultStr = result.valueText;
     }
 
-    const riskStr = result.riskLevel ? result.riskLevel[lang] : '';
-    const recommendationStr = result.recommendation ? result.recommendation[lang] : '';
-    const descriptionStr = result.description ? result.description[lang] : '';
+    const riskStr = result.riskLevel ? tl(result.riskLevel) : '';
+    const recommendationStr = result.recommendation ? tl(result.recommendation) : '';
+    const descriptionStr = result.description ? tl(result.description) : '';
 
     const note = `[Clinical Note] ${tl(calculator.name)}: ${resultStr}\n` +
                  (riskStr ? `Risk Level / Interpretation: ${riskStr}\n` : '') +
@@ -110,7 +112,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
       let valStr: string;
       if (input.type === 'boolean') {
         if (val) {
-          return `${input.name[lang]}`;
+          return `${tl(input.name)}`;
         } else {
           return null; // Skip false values to keep it extremely clean
         }
@@ -134,10 +136,10 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
       resultStr = result.valueText;
     }
 
-    const riskStr = result.riskLevel ? result.riskLevel[lang] : '';
-    const recommendationStr = result.recommendation ? result.recommendation[lang] : '';
+    const riskStr = result.riskLevel ? tl(result.riskLevel) : '';
+    const recommendationStr = result.recommendation ? tl(result.recommendation) : '';
 
-    const note = `[${calculator.name[lang]}] ${resultStr}${riskStr ? ` (${riskStr})` : ''}\n` +
+    const note = `[${tl(calculator.name)}] ${resultStr}${riskStr ? ` (${riskStr})` : ''}\n` +
                  `- 指標: ${inputSummary || (lang === 'zh' ? '無特異指標' : 'None')}\n` +
                  (recommendationStr ? `- 處置: ${recommendationStr}` : '');
 
@@ -487,13 +489,13 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
         <Accordion title={t('common.clinical_pearls')}>
           <div className="space-y-4">
             {/* Pearls list */}
-            {tl(calculator.pearls) && calculator.pearls.length > 0 && (
+            {pearls && pearls.length > 0 && (
               <div className="bg-bg-secondary/45 dark:bg-slate-950/30 p-4 rounded-xl border border-border-card/60 dark:border-slate-800/40 space-y-2.5">
                 <span className="text-[10px] font-bold text-accent-pink-solid dark:text-accent-blue-solid uppercase tracking-widest block font-display">
                   {language === 'zh' ? '臨床指引與核心觀點' : 'Clinical Directives & Insights'}
                 </span>
                 <ul className="list-disc pl-4 space-y-1.5 text-xs text-text-body dark:text-slate-350 font-sans">
-                  {calculator.pearls.map((pearl, idx) => (
+                  {pearls.map((pearl, idx) => (
                     <li key={idx} className="leading-relaxed">{pearl}</li>
                   ))}
                 </ul>

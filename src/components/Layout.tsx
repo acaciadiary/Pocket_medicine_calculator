@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
-import LanguageSelector from './LanguageSelector';
+import { LanguageSelector } from './LanguageSelector';
 import {
   Activity,
   Heart,
@@ -20,8 +20,7 @@ import {
   ChevronRight,
   BookOpen,
   Sun,
-  Moon,
-  Globe
+  Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculatorsList, CATEGORIES, type Calculator } from '../calculators/definitions';
@@ -62,7 +61,6 @@ export const Layout: React.FC<LayoutProps> = ({
       setLanguage('zh');
     }
   };
-  const displayLang = language === 'zh_hans' ? 'zh' : language;
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

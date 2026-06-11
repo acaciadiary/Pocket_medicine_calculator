@@ -47,7 +47,7 @@ interface LanguageContextProps {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
-  tl: (obj: Record<string, string>) => string;
+  tl: (obj: Record<string, string> | undefined) => string;
 }
 
 const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
@@ -65,7 +65,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     return translations[language][key] ?? translations.en[key] ?? key;
   };
 
-  const tl = (obj: Record<string, string>): string => {
+  const tl = (obj: Record<string, string> | undefined): string => {
     if (!obj) return '';
     // Prefer exact language, then fallback to Traditional Chinese for Simplified, then English
     if (obj[language]) {
