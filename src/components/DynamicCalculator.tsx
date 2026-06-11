@@ -2,35 +2,50 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Accordion } from './Accordion';
-import type { Calculator } from '../calculators/definitions';
+import { calculatorsList, type Calculator } from '../calculators/definitions';
 import { Copy, Check, RotateCcw, AlertTriangle, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface DynamicCalculatorProps {
   calculator: Calculator;
+  onSelectCalculator?: (calculator: Calculator) => void;
 }
 
-export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator }) => {
+export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator, onSelectCalculator }) => {
   const { language, t } = useLanguage();
 
   // Dynamic state dictionary for form inputs
   const [values, setValues] = useState<Record<string, any>>(() => {
     const initialValues: Record<string, any> = {};
     calculator.inputs.forEach((input) => {
-      initialValues[input.id] = input.defaultValue;
+      const savedVal = sessionStorage.getItem(`medcalc_input_${input.id}`);
+      if (savedVal !== null) {
+        if (input.type === 'number') {
+          initialValues[input.id] = savedVal === '' ? '' : parseFloat(savedVal);
+        } else if (input.type === 'boolean') {
+          initialValues[input.id] = savedVal === 'true';
+        } else {
+          initialValues[input.id] = savedVal;
+        }
+      } else {
+        initialValues[input.id] = input.defaultValue;
+      }
     });
     return initialValues;
   });
   const [copied, setCopied] = useState<boolean>(false);
+  const [ehrCopied, setEhrCopied] = useState<boolean>(false);
 
   const handleChange = (id: string, val: any) => {
     setValues((prev) => ({ ...prev, [id]: val }));
+    sessionStorage.setItem(`medcalc_input_${id}`, val !== null && val !== undefined ? val.toString() : '');
   };
 
   const resetAll = () => {
     const resetValues: Record<string, any> = {};
     calculator.inputs.forEach((input) => {
       resetValues[input.id] = input.defaultValue;
+      sessionStorage.removeItem(`medcalc_input_${input.id}`);
     });
     setValues(resetValues);
     setCopied(false);
@@ -81,6 +96,52 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
     navigator.clipboard.writeText(note);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyEhrTemplate = () => {
+    const lang = language;
+    
+    // Create a concise comma-separated summary of inputs
+    const inputSummary = calculator.inputs.map((input) => {
+      const val = values[input.id];
+      if (val === undefined || val === null || val === '') return null;
+      let valStr = '';
+      if (input.type === 'boolean') {
+        if (val) {
+          return `${input.name[lang]}`;
+        } else {
+          return null; // Skip false values to keep it extremely clean
+        }
+      } else if (input.type === 'select') {
+        const opt = input.options?.find((o) => o.value === val);
+        if (!opt) return null;
+        // Clean points annotations like (+1pt) to keep clinical note clean
+        valStr = opt.label[lang].replace(/\(\+?-?\d+分\)/g, '').replace(/\(\+?-?\d+ pts?\)/g, '').trim();
+      } else {
+        valStr = `${val} ${input.unit || ''}`.trim();
+      }
+      return `${input.name[lang]}: ${valStr}`;
+    }).filter(Boolean).join(', ');
+
+    let resultStr = '';
+    if (result.score !== undefined) {
+      resultStr = `${result.score} ${lang === 'zh' ? '分' : 'pts'}`;
+    } else if (result.value !== undefined) {
+      resultStr = `${result.value.toFixed(1)}${result.unit || ''}`;
+    } else if (result.valueText !== undefined) {
+      resultStr = result.valueText;
+    }
+
+    const riskStr = result.riskLevel ? result.riskLevel[lang] : '';
+    const recommendationStr = result.recommendation ? result.recommendation[lang] : '';
+
+    const note = `[${calculator.name[lang]}] ${resultStr}${riskStr ? ` (${riskStr})` : ''}\n` +
+                 `- 指標: ${inputSummary || (lang === 'zh' ? '無特異指標' : 'None')}\n` +
+                 (recommendationStr ? `- 處置: ${recommendationStr}` : '');
+
+    navigator.clipboard.writeText(note);
+    setEhrCopied(true);
+    setTimeout(() => setEhrCopied(false), 2000);
   };
 
   const getGlowBgColor = (riskColorStr: string | undefined) => {
@@ -322,25 +383,80 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                   </p>
                 </div>
               )}
+
+              {/* FENa -> FEUrea Smart Link */}
+              {calculator.id === 'fena' && onSelectCalculator && (
+                <div
+                  onClick={() => {
+                    const feureaCalc = calculatorsList.find((c) => c.id === 'feurea');
+                    if (feureaCalc) onSelectCalculator(feureaCalc);
+                  }}
+                  className="mt-3 bg-cyan-950/30 hover:bg-cyan-950/50 border border-cyan-500/20 hover:border-cyan-500/40 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-300 group shadow-md"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <AlertTriangle size={14} className="text-cyan-400 shrink-0 group-hover:scale-110 transition-transform animate-pulse" />
+                    <span className="text-xs text-cyan-300 font-medium text-left leading-normal">
+                      {t('common.smart_link.diuretic')}
+                    </span>
+                  </div>
+                  <ExternalLink size={12} className="text-cyan-400/70 group-hover:text-cyan-300 transition-colors shrink-0 ml-1.5" />
+                </div>
+              )}
+
+              {/* Anion Gap -> Winter's Formula Smart Link */}
+              {calculator.id === 'anion-gap' && result.value !== undefined && result.value > 12 && onSelectCalculator && (
+                <div
+                  onClick={() => {
+                    const wintersCalc = calculatorsList.find((c) => c.id === 'winters-formula');
+                    if (wintersCalc) onSelectCalculator(wintersCalc);
+                  }}
+                  className="mt-3 bg-cyan-950/30 hover:bg-cyan-950/50 border border-cyan-500/20 hover:border-cyan-500/40 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all duration-300 group shadow-md"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <AlertTriangle size={14} className="text-cyan-400 shrink-0 group-hover:scale-110 transition-transform animate-pulse" />
+                    <span className="text-xs text-cyan-300 font-medium text-left leading-normal">
+                      {t('common.smart_link.hagma')}
+                    </span>
+                  </div>
+                  <ExternalLink size={12} className="text-cyan-400/70 group-hover:text-cyan-300 transition-colors shrink-0 ml-1.5" />
+                </div>
+              )}
             </div>
 
             <div className="border-t border-glass-border/30 my-3"></div>
 
-            {/* Actions: Copy Note */}
-            <button
-              onClick={copyClinicalNote}
-              disabled={result.error !== undefined}
-              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-md select-none ${
-                result.error
-                  ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
-                  : copied
-                  ? 'bg-emerald-600 text-white shadow-emerald-700/20'
-                  : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/10 hover:shadow-cyan-600/20'
-              }`}
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? t('common.copied') : t('common.copy')}
-            </button>
+            {/* Actions: Copy Note & EHR Copy */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
+              <button
+                onClick={copyClinicalNote}
+                disabled={result.error !== undefined}
+                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-md select-none ${
+                  result.error
+                    ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                    : copied
+                    ? 'bg-emerald-600 text-white shadow-emerald-700/20'
+                    : 'bg-slate-800/80 hover:bg-slate-700/80 border border-slate-750 text-slate-300 hover:text-white shadow-slate-900/10'
+                }`}
+              >
+                {copied ? <Check size={13} className="shrink-0" /> : <Copy size={13} className="shrink-0" />}
+                <span className="truncate">{copied ? t('common.copied') : t('common.copy')}</span>
+              </button>
+              
+              <button
+                onClick={copyEhrTemplate}
+                disabled={result.error !== undefined}
+                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-md select-none ${
+                  result.error
+                    ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                    : ehrCopied
+                    ? 'bg-emerald-600 text-white shadow-emerald-700/20'
+                    : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/10 hover:shadow-cyan-600/20'
+                }`}
+              >
+                {ehrCopied ? <Check size={13} className="shrink-0" /> : <Copy size={13} className="shrink-0" />}
+                <span className="truncate">{ehrCopied ? t('common.ehr_copied') : t('common.ehr_copy')}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

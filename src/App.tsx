@@ -34,7 +34,10 @@ function App() {
               transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
               className="w-full"
             >
-              <DynamicCalculator calculator={selectedCalculator} />
+              <DynamicCalculator 
+                calculator={selectedCalculator} 
+                onSelectCalculator={setSelectedCalculator} 
+              />
             </motion.div>
           </AnimatePresence>
         </div>
