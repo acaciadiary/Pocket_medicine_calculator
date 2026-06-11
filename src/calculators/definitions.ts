@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { nonInternalMedicineCalculators } from './nonInternalMedicineCalculators';
+
 export interface InputOption {
   label: { zh: string; en: string };
   value: any;
@@ -34,7 +36,7 @@ export interface Calculator {
   id: string;
   name: { zh: string; en: string };
   subtitle: { zh: string; en: string };
-  category: 'cardiology' | 'pulmonary' | 'nephrology' | 'acid_base' | 'gastroenterology' | 'hematology' | 'oncology' | 'endocrinology' | 'infectious_diseases' | 'rheumatology';
+  category: 'cardiology' | 'pulmonary' | 'nephrology' | 'acid_base' | 'gastroenterology' | 'hematology' | 'oncology' | 'endocrinology' | 'infectious_diseases' | 'rheumatology' | 'obgyn' | 'pediatrics' | 'surgery' | 'anesthesia' | 'emergency_critical' | 'neurology' | 'psychiatry' | 'orthopedics' | 'urology' | 'dermatology' | 'ophthalmology';
   inputs: CalculatorInput[];
   calculate: (values: Record<string, any>) => CalculationResult;
   reference: string;
@@ -53,6 +55,17 @@ export const CATEGORIES = {
   endocrinology: { zh: '新陳代謝科', en: 'Endocrinology' },
   infectious_diseases: { zh: '感染科', en: 'Infectious Diseases' },
   rheumatology: { zh: '過敏免疫風濕科', en: 'Rheumatology' },
+  obgyn: { zh: '婦產科', en: 'OB/GYN' },
+  pediatrics: { zh: '小兒科', en: 'Pediatrics' },
+  surgery: { zh: '外科', en: 'Surgery' },
+  anesthesia: { zh: '麻醉科', en: 'Anesthesiology' },
+  emergency_critical: { zh: '急診重症', en: 'Emergency & Critical Care' },
+  neurology: { zh: '神經科', en: 'Neurology' },
+  psychiatry: { zh: '精神科', en: 'Psychiatry' },
+  orthopedics: { zh: '骨科', en: 'Orthopedics' },
+  urology: { zh: '泌尿科', en: 'Urology' },
+  dermatology: { zh: '皮膚科', en: 'Dermatology' },
+  ophthalmology: { zh: '眼科', en: 'Ophthalmology' },
 };
 
 export const calculatorsList: Calculator[] = [
@@ -3120,5 +3133,6 @@ export const calculatorsList: Calculator[] = [
       ]
     },
     mdcalcLink: 'https://www.mdcalc.com/calc/3620/clinical-diagnosis-gout-without-joint-fluid-analysis'
-  }
+  },
+  ...nonInternalMedicineCalculators
 ];

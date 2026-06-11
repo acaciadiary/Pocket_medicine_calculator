@@ -105,7 +105,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
     const inputSummary = calculator.inputs.map((input) => {
       const val = values[input.id];
       if (val === undefined || val === null || val === '') return null;
-      let valStr = '';
+      let valStr: string;
       if (input.type === 'boolean') {
         if (val) {
           return `${input.name[lang]}`;
