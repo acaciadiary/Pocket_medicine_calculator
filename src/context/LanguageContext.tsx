@@ -195,13 +195,21 @@ const LanguageContext = createContext<LanguageContextProps | undefined>(undefine
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('pocket_medcalc_lang');
-    return (saved === 'en' || saved === 'zh') ? saved as Language : 'zh';
+    try {
+      const saved = localStorage.getItem('pocket_medcalc_lang');
+      return (saved === 'en' || saved === 'zh') ? saved as Language : 'zh';
+    } catch (e) {
+      return 'zh';
+    }
   });
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('pocket_medcalc_lang', lang);
+    try {
+      localStorage.setItem('pocket_medcalc_lang', lang);
+    } catch (e) {
+      // Ignore security block
+    }
   };
 
   const t = (key: string): string => {
