@@ -147,7 +147,10 @@ export const FeNa: React.FC = () => {
               <label htmlFor="serumNa" className="text-xs font-semibold text-slate-300 font-display block">
                 {t('fena.serum_na')}
               </label>
-              <div className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all">
+              <div 
+                onClick={() => document.getElementById('serumNa')?.focus()}
+                className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all cursor-text"
+              >
                 <input
                   id="serumNa"
                   type="number"
@@ -155,9 +158,9 @@ export const FeNa: React.FC = () => {
                   placeholder="e.g. 140"
                   value={serumNa}
                   onChange={(e) => setSerumNa(e.target.value)}
-                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-20 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-28 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-450 bg-slate-900 border border-slate-850 px-2 py-0.5 rounded-md uppercase">
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-900 border border-slate-800/60 px-2 py-0.5 rounded-md uppercase pointer-events-none select-none">
                   {t('fena.unit.na')}
                 </span>
               </div>
@@ -168,7 +171,10 @@ export const FeNa: React.FC = () => {
               <label htmlFor="urineNa" className="text-xs font-semibold text-slate-300 font-display block">
                 {t('fena.urine_na')}
               </label>
-              <div className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all">
+              <div 
+                onClick={() => document.getElementById('urineNa')?.focus()}
+                className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all cursor-text"
+              >
                 <input
                   id="urineNa"
                   type="number"
@@ -176,9 +182,9 @@ export const FeNa: React.FC = () => {
                   placeholder="e.g. 40"
                   value={urineNa}
                   onChange={(e) => setUrineNa(e.target.value)}
-                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-20 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-28 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-450 bg-slate-900 border border-slate-850 px-2 py-0.5 rounded-md uppercase">
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-900 border border-slate-800/60 px-2 py-0.5 rounded-md uppercase pointer-events-none select-none">
                   {t('fena.unit.na')}
                 </span>
               </div>
@@ -189,7 +195,10 @@ export const FeNa: React.FC = () => {
               <label htmlFor="serumCr" className="text-xs font-semibold text-slate-300 font-display block">
                 {t('fena.serum_cr')}
               </label>
-              <div className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all">
+              <div 
+                onClick={() => document.getElementById('serumCr')?.focus()}
+                className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all cursor-text"
+              >
                 <input
                   id="serumCr"
                   type="number"
@@ -197,9 +206,9 @@ export const FeNa: React.FC = () => {
                   placeholder="e.g. 1.0"
                   value={serumCr}
                   onChange={(e) => setSerumCr(e.target.value)}
-                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-20 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-28 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-450 bg-slate-900 border border-slate-850 px-2 py-0.5 rounded-md uppercase">
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-900 border border-slate-800/60 px-2 py-0.5 rounded-md uppercase pointer-events-none select-none">
                   {t('fena.unit.cr')}
                 </span>
               </div>
@@ -210,7 +219,10 @@ export const FeNa: React.FC = () => {
               <label htmlFor="urineCr" className="text-xs font-semibold text-slate-300 font-display block">
                 {t('fena.urine_cr')}
               </label>
-              <div className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all">
+              <div 
+                onClick={() => document.getElementById('urineCr')?.focus()}
+                className="relative rounded-xl bg-slate-950/40 border border-glass-border focus-within:border-cyan-500/50 transition-all cursor-text"
+              >
                 <input
                   id="urineCr"
                   type="number"
@@ -218,9 +230,9 @@ export const FeNa: React.FC = () => {
                   placeholder="e.g. 100"
                   value={urineCr}
                   onChange={(e) => setUrineCr(e.target.value)}
-                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-20 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-full bg-transparent border-0 outline-none p-3.5 pr-28 text-white font-semibold text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-450 bg-slate-900 border border-slate-850 px-2 py-0.5 rounded-md uppercase">
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-900 border border-slate-800/60 px-2 py-0.5 rounded-md uppercase pointer-events-none select-none">
                   {t('fena.unit.cr')}
                 </span>
               </div>
