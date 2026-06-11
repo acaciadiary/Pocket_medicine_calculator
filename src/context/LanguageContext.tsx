@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'zh' | 'en';
@@ -198,7 +199,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const saved = localStorage.getItem('pocket_medcalc_lang');
       return (saved === 'en' || saved === 'zh') ? saved as Language : 'zh';
-    } catch (e) {
+    } catch {
       return 'zh';
     }
   });
@@ -207,7 +208,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLanguageState(lang);
     try {
       localStorage.setItem('pocket_medcalc_lang', lang);
-    } catch (e) {
+    } catch {
       // Ignore security block
     }
   };
