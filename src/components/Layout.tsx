@@ -20,7 +20,17 @@ import {
   ChevronRight,
   BookOpen,
   Sun,
-  Moon
+  Moon,
+  Venus,
+  Baby,
+  Scissors,
+  Syringe,
+  AlertTriangle,
+  Brain,
+  Smile,
+  Bone,
+  Fingerprint,
+  Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculatorsList, CATEGORIES, type Calculator } from '../calculators/definitions';
@@ -89,6 +99,28 @@ export const Layout: React.FC<LayoutProps> = ({
         return <Bug size={14} className="text-teal-400 dark:text-teal-500" />;
       case 'rheumatology':
         return <Sparkles size={14} className="text-pink-400 dark:text-pink-500" />;
+      case 'obgyn':
+        return <Venus size={14} className="text-fuchsia-400 dark:text-fuchsia-500" />;
+      case 'pediatrics':
+        return <Baby size={14} className="text-violet-400 dark:text-violet-500" />;
+      case 'surgery':
+        return <Scissors size={14} className="text-slate-400 dark:text-slate-500" />;
+      case 'anesthesia':
+        return <Syringe size={14} className="text-cyan-400 dark:text-cyan-500" />;
+      case 'emergency_critical':
+        return <AlertTriangle size={14} className="text-orange-400 dark:text-orange-500" />;
+      case 'neurology':
+        return <Brain size={14} className="text-indigo-550 dark:text-indigo-500" />;
+      case 'psychiatry':
+        return <Smile size={14} className="text-lime-500 dark:text-lime-650" />;
+      case 'orthopedics':
+        return <Bone size={14} className="text-stone-400 dark:text-stone-500" />;
+      case 'urology':
+        return <Droplets size={14} className="text-blue-400 dark:text-blue-500" />;
+      case 'dermatology':
+        return <Fingerprint size={14} className="text-orange-400 dark:text-orange-500" />;
+      case 'ophthalmology':
+        return <Eye size={14} className="text-teal-500 dark:text-teal-650" />;
       default:
         return <BookOpen size={14} className="text-slate-400" />;
     }
