@@ -100,6 +100,21 @@ body {
   margin: 0;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* iOS PWA Safe Area support */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* PWA standalone mode adjustments */
+@media all and (display-mode: standalone) {
+  body {
+    /* Prevent overscroll bounce in PWA mode */
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: text;
+  }
 }
 
 /* Custom notebook coordinate grid texture overlay */

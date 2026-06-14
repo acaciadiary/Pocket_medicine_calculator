@@ -3,6 +3,7 @@ import { LanguageProvider } from './context/LanguageContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { Layout } from './components/Layout'
 import { DynamicCalculator } from './components/DynamicCalculator'
+import { PWAInstallPrompt } from './components/PWAInstallPrompt'
 import { calculatorsList, type Calculator } from './calculators/definitions'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -44,6 +45,7 @@ function App() {
             </AnimatePresence>
           </div>
         </Layout>
+        <PWAInstallPrompt />
       </LanguageProvider>
     </ThemeProvider>
   )
