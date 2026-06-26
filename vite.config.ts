@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'pwa-icon-512.png'],
+      includeAssets: ['favicon.svg', 'pwa-icon-512.png', 'pwa-icon-maskable-512.png'],
       manifest: {
         name: 'Pocket MedCalc — 臨床醫學計算機',
         short_name: 'MedCalc',
@@ -30,7 +30,7 @@ export default defineConfig({
             purpose: 'any'
           },
           {
-            src: 'pwa-icon-512.png',
+            src: 'pwa-icon-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
