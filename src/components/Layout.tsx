@@ -30,7 +30,12 @@ import {
   Smile,
   Bone,
   Fingerprint,
-  Eye
+  Eye,
+  Settings,
+  Globe,
+  Share,
+  Download,
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculatorsList, CATEGORIES, type Calculator } from '../calculators/definitions';
@@ -62,19 +67,73 @@ export const Layout: React.FC<LayoutProps> = ({
     }
   }, [language, t]);
 
-  const toggleLanguage = () => {
-    if (language === 'zh') {
-      setLanguage('zh_hans');
-    } else if (language === 'zh_hans') {
-      setLanguage('en');
-    } else {
-      setLanguage('zh');
-    }
-  };
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Settings Popover State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // PWA State & Logic
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [showNotificationDot, setShowNotificationDot] = useState(false);
+
+  useEffect(() => {
+    // Check if already installed (standalone mode)
+    const standalone = window.matchMedia('(display-mode: standalone)').matches
+      || (navigator as any).standalone === true;
+    setIsStandalone(standalone);
+
+    if (standalone) return;
+
+    // Detect iOS
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(isIOSDevice);
+
+    if (isIOSDevice) {
+      const dismissed = localStorage.getItem('pwa_install_dismissed');
+      if (!dismissed) {
+        setShowNotificationDot(true);
+      }
+      return;
+    }
+
+    // Listen for Chrome/Android install prompt
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      
+      const dismissed = localStorage.getItem('pwa_install_dismissed');
+      if (!dismissed) {
+        setShowNotificationDot(true);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsStandalone(true);
+      setShowNotificationDot(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const toggleSettings = () => {
+    setIsSettingsOpen(!isSettingsOpen);
+    if (!isSettingsOpen) {
+      setShowNotificationDot(false);
+      localStorage.setItem('pwa_install_dismissed', Date.now().toString());
+    }
+  };
 
   // Map category keys to Lucide icons
   const getCategoryIcon = (categoryKey: string) => {
@@ -404,30 +463,179 @@ export const Layout: React.FC<LayoutProps> = ({
         </footer>
       </div>
 
-      {/* Floating Action Buttons on the Right Side (Inspired by the Study Journal mockup) */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
-        {/* Floating translation button with soft gradient glow */}
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={toggleLanguage}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-gradient-to-tr from-accent-pink-solid to-pink-400 dark:from-accent-blue-solid dark:to-cyan-400 shadow-[0_4px_14px_rgba(229,169,180,0.4)] dark:shadow-[0_4px_14px_rgba(6,182,212,0.3)] border border-white/20 cursor-pointer select-none"
-          title={language === 'zh' ? 'English' : '中文'}
-        >
-          <span className="text-[10px] font-bold tracking-tight">
-            {language === 'zh' ? 'EN' : '繁'}
-          </span>
-        </motion.button>
+      {/* Floating Action Buttons on the Right Side (Unified Settings Menu) */}
+      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-2 z-50 font-sans">
+        
+        {/* Settings Popover Card */}
+        <AnimatePresence>
+          {isSettingsOpen && (
+            <>
+              {/* Overlay backdrop for click-away */}
+              <div 
+                className="fixed inset-0 z-40 cursor-default" 
+                onClick={() => setIsSettingsOpen(false)}
+              />
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 15 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                className="glass-panel z-50 w-72 rounded-3xl p-5 shadow-2xl border border-accent-pink-solid/35 dark:border-accent-blue-solid/35 backdrop-blur-xl mb-2 origin-bottom-right"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-border-card/45 dark:border-slate-800/40">
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-accent-pink-solid dark:text-accent-blue-solid animate-[spin_10s_linear_infinite]" />
+                    <span className="text-sm font-bold text-text-title dark:text-white font-serif">
+                      {language === 'zh' ? '功能設定' : language === 'zh_hans' ? '功能设置' : 'Settings'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setIsSettingsOpen(false)}
+                    className="p-1 rounded-full hover:bg-bg-secondary dark:hover:bg-slate-900/60 text-text-muted hover:text-text-title cursor-pointer transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
 
-        {/* Floating theme toggle button */}
+                <div className="space-y-4 pt-4">
+                  {/* Language Selector Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-text-title dark:text-slate-350">
+                      <Globe size={13} className="text-text-muted" />
+                      <span>{language === 'zh' ? '選擇語言' : language === 'zh_hans' ? '选择语言' : 'Language'}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 bg-bg-secondary/40 dark:bg-slate-900/65 p-1 rounded-2xl border border-border-card/50 dark:border-slate-800/40">
+                      {[
+                        { code: 'zh', label: '繁中' },
+                        { code: 'zh_hans', label: '简中' },
+                        { code: 'en', label: 'EN' }
+                      ].map((lang) => {
+                        const isActive = language === lang.code;
+                        return (
+                          <button
+                            key={lang.code}
+                            onClick={() => setLanguage(lang.code as any)}
+                            className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all duration-200 cursor-pointer ${
+                              isActive
+                                ? 'bg-accent-pink-solid dark:bg-cyan-600 text-white shadow-sm font-bold'
+                                : 'text-text-muted hover:text-text-title dark:hover:text-slate-200'
+                            }`}
+                          >
+                            {lang.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Theme Selector Section */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-text-title dark:text-slate-350">
+                      {theme === 'light' ? <Sun size={13} className="text-text-muted" /> : <Moon size={13} className="text-text-muted" />}
+                      <span>{language === 'zh' ? '深淺主題' : language === 'zh_hans' ? '深浅主题' : 'Appearance'}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 bg-bg-secondary/40 dark:bg-slate-900/65 p-1 rounded-2xl border border-border-card/50 dark:border-slate-800/40">
+                      <button
+                        onClick={() => theme !== 'light' && toggleTheme()}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all duration-200 cursor-pointer ${
+                          theme === 'light'
+                            ? 'bg-accent-pink-solid text-white shadow-sm font-bold'
+                            : 'text-text-muted hover:text-text-title dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <Sun size={12} />
+                        {language === 'zh' ? '暖沙筆記' : language === 'zh_hans' ? '暖沙笔记' : 'Light'}
+                      </button>
+                      <button
+                        onClick={() => theme !== 'dark' && toggleTheme()}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all duration-200 cursor-pointer ${
+                          theme === 'dark'
+                            ? 'bg-cyan-600 text-white shadow-sm font-bold'
+                            : 'text-text-muted hover:text-text-title dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <Moon size={12} />
+                        {language === 'zh' ? '深藍極客' : language === 'zh_hans' ? '深蓝极客' : 'Dark'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* PWA Installation Section */}
+                  <div className="space-y-2 pt-2 border-t border-border-card/30 dark:border-slate-800/35">
+                    {isStandalone ? (
+                      <div className="flex items-center gap-2 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-2.5">
+                        <Check size={14} className="text-emerald-500 shrink-0" />
+                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                          {language === 'zh' ? '已安裝至桌面' : language === 'zh_hans' ? '已安装至桌面' : 'App Installed'}
+                        </span>
+                      </div>
+                    ) : isIOS ? (
+                      <div className="bg-accent-blue/20 dark:bg-cyan-950/20 border border-accent-blue-solid/35 dark:border-cyan-800/30 rounded-2xl p-2.5 space-y-1">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-text-title dark:text-cyan-400">
+                          <Share size={12} />
+                          <span>{language === 'zh' ? '加到主畫面' : language === 'zh_hans' ? '添加到主画面' : 'Add to Home Screen'}</span>
+                        </div>
+                        <p className="text-[10px] text-text-body dark:text-slate-350 leading-normal">
+                          {language === 'zh' 
+                            ? '請點擊 Safari 底部的「分享」按鈕，然後選擇「加入主畫面」即可離線使用' 
+                            : language === 'zh_hans' 
+                            ? '请点击 Safari 底部的“分享”按钮，然后选择“添加到主画面”即可离线使用' 
+                            : 'Tap Safari Share → Add to Home Screen for offline access.'}
+                        </p>
+                      </div>
+                    ) : deferredPrompt ? (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-text-muted leading-normal">
+                          {language === 'zh' 
+                            ? '安裝 Pocket MedCalc 到桌面，在病房能離線快速計算' 
+                            : language === 'zh_hans' 
+                            ? '安装 Pocket MedCalc 到桌面，在病房能离线快速计算' 
+                            : 'Install Pocket MedCalc for quick offline ward calculations.'}
+                        </p>
+                        <button
+                          onClick={handleInstall}
+                          className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold bg-accent-pink-solid dark:bg-cyan-600 hover:bg-accent-pink-solid/90 dark:hover:bg-cyan-500 text-white shadow-md transition-all cursor-pointer select-none"
+                        >
+                          <Download size={13} />
+                          {language === 'zh' ? '安裝到桌面' : language === 'zh_hans' ? '安装到桌面' : 'Install App'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="bg-bg-secondary/45 dark:bg-slate-900/40 border border-border-card/45 dark:border-slate-800/35 rounded-2xl p-2.5">
+                        <p className="text-[10px] text-text-muted leading-normal">
+                          {language === 'zh' 
+                            ? '提示：您可以在瀏覽器選單中選擇「安裝」或「新增至主畫面」' 
+                            : language === 'zh_hans' 
+                            ? '提示：您可以在浏览器菜单中选择“安装”或“添加到主画面”' 
+                            : 'Tip: Install via browser menu (Settings → Install/Add to Home Screen).'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Floating Settings FAB Gear Button */}
         <motion.button
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.95 }}
-          onClick={toggleTheme}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-gradient-to-tr from-rose-400 to-accent-pink-solid dark:from-cyan-500 dark:to-accent-blue-solid shadow-[0_4px_14px_rgba(229,169,180,0.4)] dark:shadow-[0_4px_14px_rgba(6,182,212,0.3)] border border-white/20 cursor-pointer select-none"
-          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          onClick={toggleSettings}
+          className="relative w-11 h-11 rounded-full flex items-center justify-center text-white bg-gradient-to-tr from-accent-pink-solid to-pink-400 dark:from-accent-blue-solid dark:to-cyan-400 shadow-lg border border-white/20 cursor-pointer select-none"
+          title={language === 'zh' ? '設定' : language === 'zh_hans' ? '设置' : 'Settings'}
         >
-          {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+          <Settings 
+            size={18} 
+            className={`transition-transform duration-500 ${isSettingsOpen ? 'rotate-90' : 'rotate-0'}`} 
+          />
+          
+          {/* Notification Badge / Dot */}
+          {showNotificationDot && (
+            <span className="absolute top-0 right-0 block h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-slate-950 bg-rose-500 animate-pulse" />
+          )}
         </motion.button>
       </div>
 

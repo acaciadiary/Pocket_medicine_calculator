@@ -397,7 +397,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
               )}
 
               {tl(result.recommendation) && (
-                <div className="bg-bg-secondary/40 dark:bg-slate-950/45 border border-border-card dark:border-slate-850 p-3.5 rounded-2xl">
+                <div className="bg-bg-secondary/40 dark:bg-slate-950/45 border border-border-card dark:border-slate-800 p-3.5 rounded-2xl">
                   <span className="text-[10px] font-bold text-accent-pink-solid dark:text-accent-blue-solid uppercase block font-display tracking-widest mb-1.5">
                     {t('common.interpretation')}
                   </span>
@@ -458,7 +458,7 @@ export const DynamicCalculator: React.FC<DynamicCalculatorProps> = ({ calculator
                     ? 'bg-bg-secondary/60 text-text-muted border border-border-card/50 cursor-not-allowed'
                     : copied
                     ? 'bg-emerald-600 dark:bg-emerald-700 text-white shadow-emerald-700/20 animate-pulse'
-                    : 'bg-white/95 dark:bg-slate-800/80 hover:bg-accent-pink/30 dark:hover:bg-slate-700/80 border border-border-card dark:border-slate-750 text-text-body dark:text-slate-300 hover:text-text-title dark:hover:text-white shadow-sm'
+                    : 'bg-white/95 dark:bg-slate-800/80 hover:bg-accent-pink/30 dark:hover:bg-slate-700/80 border border-border-card dark:border-slate-700 text-text-body dark:text-slate-300 hover:text-text-title dark:hover:text-white shadow-sm'
                 }`}
               >
                 {copied ? <Check size={13} className="shrink-0" /> : <Copy size={13} className="shrink-0" />}
