@@ -35,10 +35,14 @@ import {
   Globe,
   Share,
   Download,
-  Check
+  Check,
+  Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculatorsList, CATEGORIES, type Calculator } from '../calculators/definitions';
+
+const FAVORITES_FILTER = '__favorites';
+const FAVORITES_STORAGE_KEY = 'pocket_medcalc_favorites';
 
 interface LayoutProps {
   selectedCalculator: Calculator;
@@ -70,6 +74,14 @@ export const Layout: React.FC<LayoutProps> = ({
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(FAVORITES_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Settings Popover State
@@ -115,6 +127,23 @@ export const Layout: React.FC<LayoutProps> = ({
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteIds));
+  }, [favoriteIds]);
+
+  const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+  const favoriteCount = favoriteIds.length;
+  const selectedIsFavorite = favoriteSet.has(selectedCalculator.id);
+
+  const toggleFavorite = (calculatorId: string) => {
+    setFavoriteIds((prev) => {
+      if (prev.includes(calculatorId)) {
+        return prev.filter((id) => id !== calculatorId);
+      }
+      return [...prev, calculatorId];
+    });
+  };
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -197,7 +226,11 @@ export const Layout: React.FC<LayoutProps> = ({
   // Filtered list of calculators based on search query and category selector
   const filteredCalculators = useMemo(() => {
     return calculatorsList.filter((c) => {
-      const matchesCategory = selectedCategory ? c.category === selectedCategory : true;
+      const matchesCategory = selectedCategory === FAVORITES_FILTER
+        ? favoriteSet.has(c.id)
+        : selectedCategory
+          ? c.category === selectedCategory
+          : true;
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch = q
         ? c.name.zh.toLowerCase().includes(q) ||
@@ -208,7 +241,7 @@ export const Layout: React.FC<LayoutProps> = ({
         : true;
       return matchesCategory && matchesSearch;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [favoriteSet, searchQuery, selectedCategory]);
 
 // duplicate toggleLanguage removed
     
@@ -261,6 +294,26 @@ export const Layout: React.FC<LayoutProps> = ({
             </span>
           </button>
 
+          <button
+            onClick={() => setSelectedCategory(FAVORITES_FILTER)}
+            className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-xs transition-all duration-200 cursor-pointer ${
+              selectedCategory === FAVORITES_FILTER
+                ? 'bg-accent-pink/60 dark:bg-accent-blue border border-accent-pink-solid/50 dark:border-accent-blue-solid/30 text-text-title dark:text-white font-semibold'
+                : 'border border-transparent text-text-body dark:text-slate-400 hover:text-text-title dark:hover:text-slate-200 hover:bg-accent-pink/20 dark:hover:bg-slate-900/40'
+            }`}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Star
+                size={12}
+                className={selectedCategory === FAVORITES_FILTER ? 'fill-accent-pink-solid text-accent-pink-solid dark:fill-accent-blue-solid dark:text-accent-blue-solid' : 'text-text-muted'}
+              />
+              <span className="truncate">{language === 'zh' ? '我的最愛' : 'Favorites'}</span>
+            </div>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/70 dark:bg-slate-900/60 text-text-muted font-mono border border-border-card/30">
+              {favoriteCount}
+            </span>
+          </button>
+
           {/* Individual Category buttons */}
           {Object.entries(CATEGORIES).map(([key, value]) => {
             const count = categoryCounts[key] || 0;
@@ -302,29 +355,42 @@ export const Layout: React.FC<LayoutProps> = ({
           ) : (
             filteredCalculators.map((c) => {
               const isSelected = selectedCalculator.id === c.id;
+              const isFavorite = favoriteSet.has(c.id);
               return (
-                <button
+                <div
                   key={c.id}
-                  onClick={() => {
-                    onSelectCalculator(c);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full text-left p-3 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between ${
+                  className={`w-full rounded-2xl border transition-all duration-200 flex items-center justify-between ${
                     isSelected
                       ? 'bg-accent-pink/55 dark:bg-accent-blue border-accent-pink-solid dark:border-accent-blue-solid text-text-title dark:text-white font-bold shadow-md'
                       : 'bg-white/40 dark:bg-slate-950/20 border-border-card text-text-body dark:text-slate-450 hover:text-text-title dark:hover:text-slate-200 hover:border-accent-pink-solid/35 dark:hover:border-slate-800'
                   }`}
                 >
-                  <div className="min-w-0 pr-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelectCalculator(c);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="min-w-0 flex-1 text-left p-3 cursor-pointer"
+                  >
                     <div className="text-xs truncate font-display font-medium">
                       {tl(c.name)}
                     </div>
                     <div className="text-[9px] text-text-muted truncate mt-0.5">
                       {tl(c.subtitle)}
                     </div>
-                  </div>
-                  <ChevronRight size={12} className="shrink-0 text-text-muted" />
-                </button>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite(c.id)}
+                    className="mr-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-text-muted hover:bg-white/70 hover:text-accent-pink-solid dark:hover:bg-slate-900/70 dark:hover:text-accent-blue-solid transition-all cursor-pointer"
+                    title={isFavorite ? '從我的最愛移除' : '加入我的最愛'}
+                    aria-label={isFavorite ? '從我的最愛移除' : '加入我的最愛'}
+                  >
+                    <Star size={14} className={isFavorite ? 'fill-accent-pink-solid text-accent-pink-solid dark:fill-accent-blue-solid dark:text-accent-blue-solid' : ''} />
+                  </button>
+                  <ChevronRight size={12} className="mr-3 shrink-0 text-text-muted" />
+                </div>
               );
             })
           )}
@@ -340,7 +406,7 @@ export const Layout: React.FC<LayoutProps> = ({
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-pink-solid via-accent-blue-solid to-accent-beige z-50"></div>
 
       {/* Desktop Sidebar (Left Panel) */}
-      <aside className="hidden lg:flex flex-col w-[300px] shrink-0 border-r border-border-card bg-bg-card/70 dark:bg-slate-950/30 backdrop-blur-md p-5 h-screen sticky top-0 z-30">
+      <aside className="hidden lg:flex flex-col w-[320px] shrink-0 border-r border-border-card bg-bg-card/70 dark:bg-slate-950/30 backdrop-blur-md p-5 h-screen sticky top-0 z-30">
         
         {/* Brand / Logo */}
         <div className="flex items-center gap-3 mb-5">
@@ -381,7 +447,7 @@ export const Layout: React.FC<LayoutProps> = ({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-[280px] bg-bg-primary dark:bg-slate-950 border-r border-border-card backdrop-blur-xl p-5 z-50 flex flex-col h-full lg:hidden"
+              className="fixed inset-y-0 left-0 w-[300px] max-w-[90vw] bg-bg-primary dark:bg-slate-950 border-r border-border-card backdrop-blur-xl p-5 z-50 flex flex-col h-full lg:hidden"
             >
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
@@ -416,7 +482,7 @@ export const Layout: React.FC<LayoutProps> = ({
             >
               <Menu size={18} />
             </button>
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-sm font-bold font-serif text-text-title leading-none">
                 {t('app.title')}
               </h1>
@@ -435,6 +501,19 @@ export const Layout: React.FC<LayoutProps> = ({
 
           {/* Top Actions: Keep header relatively clean, toggles placed here on desktop */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleFavorite(selectedCalculator.id)}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold shadow-sm transition-all cursor-pointer select-none ${
+                selectedIsFavorite
+                  ? 'border-accent-pink-solid/60 bg-accent-pink/70 text-text-title dark:border-accent-blue-solid/60 dark:bg-cyan-950/50 dark:text-cyan-300'
+                  : 'border-border-card bg-white/80 text-text-body hover:border-accent-pink-solid hover:text-text-title dark:bg-slate-900/80 dark:hover:border-accent-blue-solid dark:hover:text-white'
+              }`}
+              title={selectedIsFavorite ? '從我的最愛移除' : '加入我的最愛'}
+            >
+              <Star size={14} className={selectedIsFavorite ? 'fill-accent-pink-solid text-accent-pink-solid dark:fill-accent-blue-solid dark:text-accent-blue-solid' : ''} />
+              <span className="hidden sm:inline">{language === 'zh' ? '我的最愛' : 'Favorite'}</span>
+            </button>
+
             {/* Language Selector */}
             <LanguageSelector />
 

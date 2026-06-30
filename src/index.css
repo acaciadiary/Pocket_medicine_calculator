@@ -89,6 +89,16 @@
   --color-border-glass-border: var(--border-card);
 }
 
+html {
+  font-size: 17px;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 16.5px;
+  }
+}
+
 /* Custom background styles with dynamic theme colors */
 body {
   background-color: var(--bg-primary);
@@ -99,6 +109,7 @@ body {
   background-attachment: fixed;
   color: var(--text-body);
   font-family: var(--font-sans);
+  line-height: 1.55;
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
